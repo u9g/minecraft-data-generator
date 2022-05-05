@@ -29,8 +29,7 @@ public class BiomesDataGenerator implements IDataGenerator {
         biomeDesc.addProperty("category", biome.getCategory().getName());
         biomeDesc.addProperty("temperature", biome.getTemperature());
         biomeDesc.addProperty("precipitation", biome.getPrecipitation().getName());
-        biomeDesc.addProperty("depth", biome.getDepth());
-
+        //biomeDesc.addProperty("depth", biome.getDepth()); - Doesn't exist anymore in minecraft source
         biomeDesc.addProperty("dimension", guessBiomeDimensionFromCategory(biome));
         biomeDesc.addProperty("displayName", DataGeneratorUtils.translateText(localizationKey));
         biomeDesc.addProperty("color", biome.getSkyColor());

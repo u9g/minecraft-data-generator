@@ -3,19 +3,25 @@ package me.arch.mcdatagen.generators;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.arch.mcdatagen.util.DataGeneratorUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.AmbientEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.WaterCreatureEntity;
-import net.minecraft.entity.passive.AnimalEntity;
-import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.*;
+import net.minecraft.entity.ai.brain.Brain;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.decoration.*;
+import net.minecraft.entity.decoration.painting.PaintingEntity;
+import net.minecraft.entity.mob.*;
+import net.minecraft.entity.passive.*;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.MinecartEntity;
+import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 public class EntitiesDataGenerator implements IDataGenerator {
 
@@ -53,8 +59,25 @@ public class EntitiesDataGenerator implements IDataGenerator {
             entityTypeString = entityObject != null ? getEntityTypeForClass(entityObject.getClass()) : "player";
         }
         entityDesc.addProperty("type", entityTypeString);
+        entityDesc.addProperty("category", getCategoryFrom(entityType));
 
         return entityDesc;
+    }
+
+    private static String getCategoryFrom(EntityType<?> entityType) {
+        if (entityType == EntityType.PLAYER) return "UNKNOWN"; // fail early for player entities
+        Entity entity = EntityType.createInstanceFromId(Registry.ENTITY_TYPE.getRawId(entityType), MinecraftClient.getInstance().world);
+        if (entity == null) throw new Error("Entity was null after trying to create a: " + DataGeneratorUtils.translateText(entityType.getTranslationKey()));
+        entity.discard();
+        return switch (entity.getClass().getPackageName()) {
+            case "net.minecraft.entity.decoration", "net.minecraft.entity.decoration.painting" -> "Immobile";
+            case "net.minecraft.entity.boss", "net.minecraft.entity.mob", "net.minecraft.entity.boss.dragon" -> "Hostile Mobs";
+            case "net.minecraft.entity.projectile", "net.minecraft.entity.projectile.thrown" -> "Projectiles";
+            case "net.minecraft.entity.passive" -> "Passive Mobs";
+            case "net.minecraft.entity.vehicle" -> "Vehicles";
+            case "net.minecraft.entity" -> "UNKNOWN";
+            default -> throw new Error("Unexpected entity type: " + entity.getClass().getPackageName());
+        };
     }
 
     //Honestly, both "type" and "category" fields in the schema and examples do not contain any useful information

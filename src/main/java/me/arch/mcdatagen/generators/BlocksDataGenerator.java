@@ -27,9 +27,7 @@ import net.minecraft.world.EmptyBlockView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BlocksDataGenerator implements IDataGenerator {
@@ -139,17 +137,19 @@ public class BlocksDataGenerator implements IDataGenerator {
         List<BlockState> blockStates = block.getStateManager().getStates();
         BlockState defaultState = block.getDefaultState();
         Identifier registryKey = blockRegistry.getKey(block).orElseThrow().getValue();
-        Item blockItem = block.asItem();
-        String localizationKey = blockItem.getTranslationKey();
+        String localizationKey = block.getTranslationKey();
 
         blockDesc.addProperty("id", blockRegistry.getRawId(block));
         blockDesc.addProperty("name", registryKey.getPath());
+//        if (Objects.equals(registryKey.getPath(), "red_candle_cake")) {
+//            System.out.println();
+//        }
         blockDesc.addProperty("displayName", DataGeneratorUtils.translateText(localizationKey));
 
         blockDesc.addProperty("hardness", block.getHardness());
         blockDesc.addProperty("resistance", block.getBlastResistance());
-        blockDesc.addProperty("stackSize", blockItem.getMaxCount());
-        blockDesc.addProperty("diggable", block.getHardness() != -1.0f);
+        blockDesc.addProperty("stackSize", block.asItem().getMaxCount());
+        blockDesc.addProperty("diggable", block.getHardness() != -1.0f || block.getHardness() == 0f);
         blockDesc.addProperty("material", findMatchingBlockMaterial(defaultState, materials));
 
         blockDesc.addProperty("transparent", !defaultState.isOpaque());
