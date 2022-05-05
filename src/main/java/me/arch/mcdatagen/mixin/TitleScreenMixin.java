@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class TitleScreenMixin {
     @Inject(method = "initWidgetsNormal", at = @At("TAIL"))
     private void afterInit(CallbackInfo callbackInfo) {
-        TitleScreenHelper.joinLocalWorld();
+//        TitleScreenHelper.joinLocalWorld();
     }
 }
